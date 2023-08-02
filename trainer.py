@@ -9,9 +9,9 @@ from models import *
 from torchmetrics import Accuracy, F1Score, Precision, Recall
 
 # -----------------------------------------------------------------------------
-aaaaaaaaaaaaa
+
 def train(train_loader, val_loader, scheme, fold):
-asdasdasd
+
     seed = 2
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
