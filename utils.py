@@ -13,7 +13,9 @@ batch_size_train = 64
 batch_size_val = 1 # 1 as we evaluate with the whole sequence
 lr = 0.0001
 epochs = 100
-
+features_dim = 1
+num_f_maps = 64
+out_features = 1 # num_classes
 
 def normalize_data(data_dir):
 

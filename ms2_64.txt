@@ -1,0 +1,57 @@
+cuda
+>>> Training on scheme:  random_split
+Training on fold 1
+ms2
+
+>>> Training
+
+Train - Loss:0.7606, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.7006, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:1
+Train - Loss:0.6923, Accuracy:0.5204, F1:0.0784, Precision:0.8000, Recall:0.0412                || Val - Loss:0.6643, Accuracy:0.4750, F1:0.6441, Precision:0.4750, Recall:1.0000 Epoch:2
+Best F1 model updated:  tensor(0.6441, device='cuda:0')
+Train - Loss:0.6597, Accuracy:0.4949, F1:0.6621, Precision:0.4949, Recall:1.0000                || Val - Loss:0.6468, Accuracy:0.4750, F1:0.6441, Precision:0.4750, Recall:1.0000 Epoch:3
+Train - Loss:0.6389, Accuracy:0.4949, F1:0.6621, Precision:0.4949, Recall:1.0000                || Val - Loss:0.6255, Accuracy:0.4750, F1:0.6441, Precision:0.4750, Recall:1.0000 Epoch:4
+Train - Loss:0.6204, Accuracy:0.4949, F1:0.6621, Precision:0.4949, Recall:1.0000                || Val - Loss:0.6053, Accuracy:0.4750, F1:0.6441, Precision:0.4750, Recall:1.0000 Epoch:5
+Train - Loss:0.6060, Accuracy:0.4949, F1:0.6621, Precision:0.4949, Recall:1.0000                || Val - Loss:0.5940, Accuracy:0.5250, F1:0.6122, Precision:0.5000, Recall:0.7895 Epoch:6
+Train - Loss:0.5939, Accuracy:0.5000, F1:0.5505, Precision:0.4959, Recall:0.6186                || Val - Loss:0.5872, Accuracy:0.5250, F1:0.6122, Precision:0.5000, Recall:0.7895 Epoch:7
+Train - Loss:0.5943, Accuracy:0.4541, F1:0.5244, Precision:0.4609, Recall:0.6082                || Val - Loss:0.5810, Accuracy:0.5750, F1:0.6909, Precision:0.5278, Recall:1.0000 Epoch:8
+Best F1 model updated:  tensor(0.6909, device='cuda:0')
+Train - Loss:0.5842, Accuracy:0.4949, F1:0.6574, Precision:0.4948, Recall:0.9794                || Val - Loss:0.5753, Accuracy:0.4750, F1:0.6441, Precision:0.4750, Recall:1.0000 Epoch:9
+Train - Loss:0.5789, Accuracy:0.4949, F1:0.6621, Precision:0.4949, Recall:1.0000                || Val - Loss:0.5732, Accuracy:0.4750, F1:0.6441, Precision:0.4750, Recall:1.0000 Epoch:10
+Train - Loss:0.5800, Accuracy:0.4949, F1:0.6621, Precision:0.4949, Recall:1.0000                || Val - Loss:0.5698, Accuracy:0.4750, F1:0.6441, Precision:0.4750, Recall:1.0000 Epoch:11
+Train - Loss:0.5807, Accuracy:0.4949, F1:0.6621, Precision:0.4949, Recall:1.0000                || Val - Loss:0.5720, Accuracy:0.4750, F1:0.6441, Precision:0.4750, Recall:1.0000 Epoch:12
+Train - Loss:0.5787, Accuracy:0.4949, F1:0.6621, Precision:0.4949, Recall:1.0000                || Val - Loss:0.5710, Accuracy:0.4750, F1:0.6441, Precision:0.4750, Recall:1.0000 Epoch:13
+Train - Loss:0.5770, Accuracy:0.4949, F1:0.6621, Precision:0.4949, Recall:1.0000                || Val - Loss:0.5673, Accuracy:0.5750, F1:0.6909, Precision:0.5278, Recall:1.0000 Epoch:14
+Train - Loss:0.5724, Accuracy:0.5000, F1:0.5377, Precision:0.4957, Recall:0.5876                || Val - Loss:0.5659, Accuracy:0.4250, F1:0.3030, Precision:0.3571, Recall:0.2632 Epoch:15
+Train - Loss:0.5785, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5661, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:16
+Train - Loss:0.5742, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5678, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:17
+Train - Loss:0.5811, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5708, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:18
+Train - Loss:0.5849, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5698, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:19
+Train - Loss:0.5779, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5675, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:20
+Train - Loss:0.5769, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5664, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:21
+Train - Loss:0.5739, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5637, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:22
+Train - Loss:0.5728, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5640, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:23
+Train - Loss:0.5759, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5642, Accuracy:0.4250, F1:0.3030, Precision:0.3571, Recall:0.2632 Epoch:24
+Train - Loss:0.5685, Accuracy:0.4745, F1:0.2370, Precision:0.4211, Recall:0.1649                || Val - Loss:0.5660, Accuracy:0.5250, F1:0.6122, Precision:0.5000, Recall:0.7895 Epoch:25
+Train - Loss:0.5688, Accuracy:0.4643, F1:0.6263, Precision:0.4783, Recall:0.9072                || Val - Loss:0.5712, Accuracy:0.5250, F1:0.6122, Precision:0.5000, Recall:0.7895 Epoch:26
+Train - Loss:0.5743, Accuracy:0.4898, F1:0.6575, Precision:0.4923, Recall:0.9897                || Val - Loss:0.5705, Accuracy:0.5250, F1:0.6122, Precision:0.5000, Recall:0.7895 Epoch:27
+Train - Loss:0.5792, Accuracy:0.5255, F1:0.5131, Precision:0.5213, Recall:0.5052                || Val - Loss:0.5640, Accuracy:0.4250, F1:0.3030, Precision:0.3571, Recall:0.2632 Epoch:28
+Train - Loss:0.5661, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5613, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:29
+Train - Loss:0.5684, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5639, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:30
+Train - Loss:0.5692, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5637, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:31
+Train - Loss:0.5709, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5629, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:32
+Train - Loss:0.5671, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5622, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:33
+Train - Loss:0.5649, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5615, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:34
+Train - Loss:0.5667, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5611, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:35
+Train - Loss:0.5701, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5608, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:36
+Train - Loss:0.5640, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5607, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:37
+Train - Loss:0.5638, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5607, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:38
+Train - Loss:0.5664, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5607, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:39
+Train - Loss:0.5617, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5607, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:40
+Train - Loss:0.5655, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5607, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:41
+Train - Loss:0.5640, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5608, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:42
+Train - Loss:0.5656, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5608, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:43
+Train - Loss:0.5612, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5608, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:44
+Train - Loss:0.5719, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5609, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:45
+Train - Loss:0.5639, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5609, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:46
+Train - Loss:0.5688, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5609, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:47
+Train - Loss:0.5647, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.5610, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:48

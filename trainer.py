@@ -5,11 +5,11 @@ from torch import nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 from utils import *
-from models import *
+from baseline.models import *
 from torchmetrics import Accuracy, F1Score, Precision, Recall
 
 # -----------------------------------------------------------------------------
-def train(train_loader, val_loader, scheme, fold):
+def train(train_loader, val_loader, scheme, fold, exp):
 
     seed = 2
     torch.manual_seed(seed)
@@ -23,12 +23,33 @@ def train(train_loader, val_loader, scheme, fold):
     # -------------------------------------------------------------------------
     # Import model
     # -------------------------------------------------------------------------
-    model = force_model(embed_dim=16).to(device)
+    if 'simpletcn' in exp:
+        model = force_model(embed_dim=16).to(device)
+        print('simpletcn')
+    elif 'mstcn' in exp:
+        from baseline.model_MSTCN import MultiStageModel
+        num_stages = 4
+        num_layers = 10
+        model = MultiStageModel(num_stages, num_layers, num_f_maps, features_dim, out_features).to(device)
+        print('mstcn')
+    elif 'ms2' in exp:
+        from baseline.model_MSTCN2 import MS_TCN2
+        num_layers_PG = 11
+        num_layers_R = 10
+        num_R = 3
+        model = MS_TCN2(num_layers_PG, num_layers_R, num_R, num_f_maps, features_dim, out_features).to(device)
+        print('ms2')
+    elif 'asformer' in exp:
+        from baseline.model_ASFormer import MyTransformer
+        num_layers = 10
+        channel_mask_rate = 0.3
+        model = MyTransformer(3, num_layers, 2, 2, num_f_maps, features_dim, out_features, channel_mask_rate).to(device)
+        print('asformer')
     optimizer = optim.AdamW(model.parameters(), lr=lr)
 
     # Loss function
     criterion = nn.BCEWithLogitsLoss()
-    
+
     # Metrics
     acc_metric = Accuracy(task='binary').cuda()
     f1_score_metric = F1Score(task='binary').cuda()
@@ -41,7 +62,7 @@ def train(train_loader, val_loader, scheme, fold):
 
     # -------------------------------------------------------------------------
     
-    def iter_dataloader(data_loader,model,training):
+    def iter_dataloader(data_loader, model, training, exp):
     
         running_loss = 0.0
         labels_all = torch.empty((0)).to(device)
@@ -57,10 +78,19 @@ def train(train_loader, val_loader, scheme, fold):
                 optimizer.zero_grad()
             
             # Forward pass
-            logits = model.forward(inputs)
-
-            # Loss  
-            batch_loss = criterion(logits,labels)
+            if 'simpletcn' in exp:
+                logits = model.forward(inputs)
+                batch_loss = criterion(logits,labels)
+            elif 'mstcn' in exp or 'asformer' in exp:
+                logits = model.forward(inputs, torch.ones(inputs.size(), device=device))
+            elif 'ms2' in exp:
+                logits = model.forward(inputs)
+            if 'ms2' in exp or 'mstcn' in exp or 'asformer' in exp:
+                batch_loss = 0
+                for p in logits:
+                    batch_loss += criterion(p, labels)
+                batch_loss /= float(len(logits))
+                logits = (logits[-1]>=0.0).int()
             
             if training == True:
                 # Backprop
@@ -75,7 +105,6 @@ def train(train_loader, val_loader, scheme, fold):
             labels_all = torch.cat((labels_all, labels), 0)
             output_all = torch.cat((output_all, logits), 0)
             
-        
         # Metrics
         acc = acc_metric(output_all,labels_all)
         f1 = f1_score_metric(output_all,labels_all)
@@ -94,7 +123,7 @@ def train(train_loader, val_loader, scheme, fold):
 
         model.train()
 
-        metrics_train, loss_epoch_train = iter_dataloader(train_loader, model, training=True)
+        metrics_train, loss_epoch_train = iter_dataloader(train_loader, model, training=True, exp=exp)
 
         return metrics_train, loss_epoch_train
 
@@ -106,7 +135,7 @@ def train(train_loader, val_loader, scheme, fold):
 
         with torch.no_grad():
 
-            metrics_val, loss_epoch_val = iter_dataloader(val_loader, model, training=False)
+            metrics_val, loss_epoch_val = iter_dataloader(val_loader, model, training=False, exp=exp)
 
         return metrics_val, loss_epoch_val
 
@@ -116,9 +145,10 @@ def train(train_loader, val_loader, scheme, fold):
     best_model_wts = copy.deepcopy(model.state_dict())
     best_epoch = 0
     min_val_loss = np.inf
+    best_f1 = 0
 
     # TensorBoard
-    log_dir = os.path.join(os.getcwd(),'logs',scheme,fold)
+    log_dir = os.path.join(os.getcwd(),'logs', exp, scheme,fold)
     tb = SummaryWriter(log_dir)
 
     # -------------------------------------------------------------------------
@@ -130,19 +160,30 @@ def train(train_loader, val_loader, scheme, fold):
 
         metrics_train, loss_epoch_train = training(model, train_loader)
         metrics_val, loss_epoch_val = testing(model, val_loader)
-        print(f'Train - Loss: {loss_epoch_train:.4f}, Accuracy:{metrics_train[0]:.4f} || Val - Loss: {loss_epoch_val:.4f}, Accuracy:{metrics_val[0]:.4f}, Epoch:{epoch}')
+        print(f'Train - Loss:{loss_epoch_train:.4f}, Accuracy:{metrics_train[0]:.4f}, F1:{metrics_train[1]:.4f}, Precision:{metrics_train[2]:.4f}, Recall:{metrics_train[3]:.4f} \
+               || Val - Loss:{loss_epoch_val:.4f}, Accuracy:{metrics_val[0]:.4f}, F1:{metrics_val[1]:.4f}, Precision:{metrics_val[2]:.4f}, Recall:{metrics_val[3]:.4f} Epoch:{epoch}')
 
-        if loss_epoch_val < min_val_loss:
-            min_val_loss = loss_epoch_val
+        # if loss_epoch_val < min_val_loss:
+        #     min_val_loss = loss_epoch_val
+        #     best_metrics = metrics_val
+        #     best_model_wts = copy.deepcopy(model.state_dict())
+        #     best_epoch = epoch
+        if metrics_val[1] > best_f1:
+            best_f1 = metrics_val[1]
             best_metrics = metrics_val
             best_model_wts = copy.deepcopy(model.state_dict())
             best_epoch = epoch
-        
+            min_val_loss = loss_epoch_val
+            print('Best F1 model updated: ', best_f1)
+
         # Scheduler Update
         scheduler.step()
 
         tb.add_scalars('Loss',{'Training' : loss_epoch_train, 'Validation' : loss_epoch_val}, epoch)
-        tb.add_scalars('Accuracy',{'Training' : metrics_train[0], 'Validation' : metrics_val[0]},epoch)
+        tb.add_scalars('Accuracy',{'Training' : metrics_train[0], 'Validation' : metrics_val[0]}, epoch)
+        tb.add_scalars('F1', {'Training' : metrics_train[1], 'Validation' : metrics_val[1]}, epoch)
+        tb.add_scalars('Precision',{'Training' : metrics_train[2], 'Validation' : metrics_val[2]}, epoch)
+        tb.add_scalars('Recall',{'Training' : metrics_train[3], 'Validation' : metrics_val[3]}, epoch)
         tb.flush()
 
     tb.close()
