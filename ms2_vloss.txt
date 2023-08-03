@@ -5,3 +5,5 @@ ms2
 
 >>> Training
 
+Train - Loss:0.7606, Accuracy:0.5051, F1:0.0000, Precision:0.0000, Recall:0.0000                || Val - Loss:0.7006, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:1
+Best model updated:  0.7006070092320442

@@ -9,3 +9,5 @@ Train - Loss:0.7802, Accuracy:0.4949, F1:0.6621, Precision:0.4949, Recall:1.0000
 Best model updated:  0.7496971309185028
 Train - Loss:0.7347, Accuracy:0.4949, F1:0.6621, Precision:0.4949, Recall:1.0000                || Val - Loss:0.7112, Accuracy:0.4750, F1:0.6441, Precision:0.4750, Recall:1.0000 Epoch:2
 Best model updated:  0.7112306073307991
+Train - Loss:0.7013, Accuracy:0.4745, F1:0.6411, Precision:0.4842, Recall:0.9485                || Val - Loss:0.6862, Accuracy:0.5250, F1:0.0000, Precision:0.0000, Recall:0.0000 Epoch:3
+Best model updated:  0.686163692176342
