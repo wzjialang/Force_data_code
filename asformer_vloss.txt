@@ -1,0 +1,7 @@
+cuda
+>>> Training on scheme:  random_split
+Training on fold 1
+asformer
+
+>>> Training
+

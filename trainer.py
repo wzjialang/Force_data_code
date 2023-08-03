@@ -145,7 +145,6 @@ def train(train_loader, val_loader, scheme, fold, exp):
     best_model_wts = copy.deepcopy(model.state_dict())
     best_epoch = 0
     min_val_loss = np.inf
-    best_f1 = 0
 
     # TensorBoard
     log_dir = os.path.join(os.getcwd(),'logs', exp, scheme,fold)
@@ -163,18 +162,19 @@ def train(train_loader, val_loader, scheme, fold, exp):
         print(f'Train - Loss:{loss_epoch_train:.4f}, Accuracy:{metrics_train[0]:.4f}, F1:{metrics_train[1]:.4f}, Precision:{metrics_train[2]:.4f}, Recall:{metrics_train[3]:.4f} \
                || Val - Loss:{loss_epoch_val:.4f}, Accuracy:{metrics_val[0]:.4f}, F1:{metrics_val[1]:.4f}, Precision:{metrics_val[2]:.4f}, Recall:{metrics_val[3]:.4f} Epoch:{epoch}')
 
-        # if loss_epoch_val < min_val_loss:
-        #     min_val_loss = loss_epoch_val
-        #     best_metrics = metrics_val
-        #     best_model_wts = copy.deepcopy(model.state_dict())
-        #     best_epoch = epoch
-        if metrics_val[1] > best_f1:
-            best_f1 = metrics_val[1]
+        if loss_epoch_val < min_val_loss:
+            min_val_loss = loss_epoch_val
             best_metrics = metrics_val
             best_model_wts = copy.deepcopy(model.state_dict())
             best_epoch = epoch
-            min_val_loss = loss_epoch_val
-            print('Best F1 model updated: ', best_f1)
+            print('Best model updated: ', min_val_loss)
+        # if metrics_val[1] > best_f1:
+        #     best_f1 = metrics_val[1]
+        #     best_metrics = metrics_val
+        #     best_model_wts = copy.deepcopy(model.state_dict())
+        #     best_epoch = epoch
+        #     min_val_loss = loss_epoch_val
+        #     print('Best F1 model updated: ', best_f1)
 
         # Scheduler Update
         scheduler.step()
