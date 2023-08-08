@@ -9,7 +9,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
 # Hyperparameters
-batch_size_train = 1
+batch_size_train = 64
 batch_size_val = 1 # 1 as we evaluate with the whole sequence
 lr = 0.0001
 epochs = 100
