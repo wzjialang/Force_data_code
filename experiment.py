@@ -25,11 +25,11 @@ def cross_valid(fold, scheme, exp):
 
 # Cross-Val Scheme
 parser = argparse.ArgumentParser()
-parser.add_argument('-exp', default='test/ms2', help='model and exp name', type=str)
+parser.add_argument('-exp', default='test/cldnn', help='model and exp name', type=str)
 args = parser.parse_args()
 
 # for scheme in schemes:
-schemes = ['louo']
+schemes = ['random_split','louo']
 fold_list = ['1','2','3','4','5','6']
 
 # Training on each fold

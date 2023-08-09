@@ -45,10 +45,27 @@ def train(train_loader, val_loader, scheme, fold, exp):
         channel_mask_rate = 0.3
         model = MyTransformer(3, num_layers, 2, 2, num_f_maps, features_dim, out_features, channel_mask_rate).to(device)
         print('asformer')
+    elif 'gru' in exp:
+        from baseline.LSTM_GRU_CLDNN import MultiLayerGRU
+        model = MultiLayerGRU(features_dim, 64, 2, out_features).to(device)
+        print('gru')
+    elif 'lstm' in exp:
+        from baseline.LSTM_GRU_CLDNN import MultiLayerLSTM
+        model = MultiLayerLSTM(features_dim, 64, 2, out_features).to(device)
+        print('lstm')
+    elif 'bidirectional' in exp:
+        from baseline.LSTM_GRU_CLDNN import BidirectionalLSTM
+        model = BidirectionalLSTM(features_dim, 64, 2, out_features).to(device)
+        print('bidirectional')
+    elif 'cldnn' in exp:
+        from baseline.LSTM_GRU_CLDNN import CLDNN
+        model = CLDNN(features_dim, 64, 2, out_features).to(device)
+        print('cldnn')
     optimizer = optim.AdamW(model.parameters(), lr=lr)
 
     # Loss function
     criterion = nn.BCEWithLogitsLoss()
+    sig_m = nn.Sigmoid()
 
     # Metrics
     acc_metric = Accuracy(task='binary').cuda()
@@ -78,19 +95,21 @@ def train(train_loader, val_loader, scheme, fold, exp):
                 optimizer.zero_grad()
             
             # Forward pass
-            if 'simpletcn' in exp:
-                logits = model.forward(inputs)
-                batch_loss = criterion(logits,labels)
-            elif 'mstcn' in exp or 'asformer' in exp:
+            if 'mstcn' in exp or 'asformer' in exp:
                 logits = model.forward(inputs, torch.ones(inputs.size(), device=device))
             elif 'ms2' in exp:
                 logits = model.forward(inputs)
+            else:
+                logits = model.forward(inputs)
+                batch_loss = criterion(logits,labels)
+                logits = (logits >= 0.0).int()
             if 'ms2' in exp or 'mstcn' in exp or 'asformer' in exp:
                 batch_loss = 0
                 for p in logits:
                     batch_loss += criterion(p, labels)
                 batch_loss /= float(len(logits))
-                logits = (logits[-1]>=0.0).int()
+                logits = (sig_m(logits[-1])>=0.5).int()
+            
             
             if training == True:
                 # Backprop
@@ -162,7 +181,7 @@ def train(train_loader, val_loader, scheme, fold, exp):
         print(f'Train - Loss:{loss_epoch_train:.4f}, Accuracy:{metrics_train[0]:.4f}, F1:{metrics_train[1]:.4f}, Precision:{metrics_train[2]:.4f}, Recall:{metrics_train[3]:.4f} \
                || Val - Loss:{loss_epoch_val:.4f}, Accuracy:{metrics_val[0]:.4f}, F1:{metrics_val[1]:.4f}, Precision:{metrics_val[2]:.4f}, Recall:{metrics_val[3]:.4f} Epoch:{epoch}')
 
-        if loss_epoch_val < min_val_loss:
+        if loss_epoch_val < min_val_loss and metrics_val[1] >= 0.4:
             min_val_loss = loss_epoch_val
             best_metrics = metrics_val
             best_model_wts = copy.deepcopy(model.state_dict())
