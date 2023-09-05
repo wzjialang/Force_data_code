@@ -5,16 +5,24 @@ from baseline.models import *
 import time
 import argparse
 
+seed = 2
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+# torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+np.random.seed(seed)  # Numpy module.
+random.seed(seed)  # Python random module.
+torch.manual_seed(seed)
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.deterministic = True
 
-
-def cross_valid(fold, scheme, exp):
+def cross_valid(fold, scheme, exp, aug):
 
     print(f'Training on fold {fold}')
 
     train_loader, val_loader = dataset(scheme,fold,batch_size_train=batch_size_train,batch_size_val=batch_size_val)
 
     # Training
-    best_model_wts, best_metrics, min_val_loss, best_epoch = train(train_loader, val_loader, scheme, fold, exp)
+    best_model_wts, best_metrics, min_val_loss, best_epoch = train(train_loader, val_loader, scheme, fold, exp, aug)
     if not os.path.exists(os.path.join(os.getcwd(),'models',exp)):
         os.makedirs(os.path.join(os.getcwd(),'models',exp))
     torch.save(best_model_wts, os.path.join(os.getcwd(),'models',exp)+ '/' + scheme + '_Fold' + fold + '_best.pth')
@@ -26,6 +34,7 @@ def cross_valid(fold, scheme, exp):
 # Cross-Val Scheme
 parser = argparse.ArgumentParser()
 parser.add_argument('-exp', default='test/cldnn', help='model and exp name', type=str)
+parser.add_argument('-aug', default=None, help='data augmentation: fft/quantize/drift/timewrap', type=str)
 args = parser.parse_args()
 
 # for scheme in schemes:
@@ -43,7 +52,7 @@ for scheme in schemes:
     folds_epoch = []
     print ('>>> Training on scheme: ', scheme)
     for fold in fold_list:
-        fold_min_val_loss, fold_best_metrics, fold_best_epoch = cross_valid(fold, scheme, exp=args.exp)
+        fold_min_val_loss, fold_best_metrics, fold_best_epoch = cross_valid(fold, scheme, exp=args.exp, aug=args.aug)
 
         folds_loss.append(fold_min_val_loss)
         folds_acc.append(fold_best_metrics[0])

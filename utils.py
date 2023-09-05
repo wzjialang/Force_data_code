@@ -2,16 +2,16 @@ import torch
 import pandas as pd
 import os
 from sklearn.preprocessing import StandardScaler
-
+os.environ['CUDA_VISIBLE_DEVICES']= '0'
 
 # Device
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print(device)
 
 # Hyperparameters
 batch_size_train = 32
 batch_size_val = 1 # 1 as we evaluate with the whole sequence
-lr = 0.001
+lr = 0.0001
 epochs = 100
 features_dim = 1
 num_f_maps = 64

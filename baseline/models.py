@@ -35,11 +35,11 @@ class SingleStageTCN(nn.Module):
         return out
     
 class force_model(nn.Module):
-    def __init__(self, embed_dim):
+    def __init__(self, features_dim, embed_dim):
         super(force_model, self).__init__()
 
         # TCN
-        self.SingleStageTCN = SingleStageTCN(ftrs_embed=1, embed_dim=embed_dim, temp_window=25, dropout=0)
+        self.SingleStageTCN = SingleStageTCN(ftrs_embed=features_dim, embed_dim=embed_dim, temp_window=25, dropout=0)
 
         # Clssification head
         self.head = nn.Linear(embed_dim,1)

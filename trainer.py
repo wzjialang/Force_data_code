@@ -7,24 +7,19 @@ from torch.utils.tensorboard import SummaryWriter
 from utils import *
 from baseline.models import *
 from torchmetrics import Accuracy, F1Score, Precision, Recall
-
+import tsaug
+from tsaug.visualization import plot
 # -----------------------------------------------------------------------------
-def train(train_loader, val_loader, scheme, fold, exp):
-
-    seed = 2
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    # torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
-    np.random.seed(seed)  # Numpy module.
-    random.seed(seed)  # Python random module.
-    torch.manual_seed(seed)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
+def train(train_loader, val_loader, scheme, fold, exp, aug):
+    if aug == 'fft':
+        features_dim = 3
+    else:
+        features_dim = 1
     # -------------------------------------------------------------------------
     # Import model
     # -------------------------------------------------------------------------
     if 'simpletcn' in exp:
-        model = force_model(embed_dim=16).to(device)
+        model = force_model(features_dim, embed_dim=16).to(device)
         print('simpletcn')
     elif 'mstcn' in exp:
         from baseline.model_MSTCN import MultiStageModel
@@ -47,19 +42,19 @@ def train(train_loader, val_loader, scheme, fold, exp):
         print('asformer')
     elif 'gru' in exp:
         from baseline.LSTM_GRU_CLDNN import MultiLayerGRU
-        model = MultiLayerGRU(features_dim, 64, 2, out_features).to(device)
+        model = MultiLayerGRU(features_dim, 64, 4, out_features).to(device)
         print('gru')
     elif 'lstm' in exp:
         from baseline.LSTM_GRU_CLDNN import MultiLayerLSTM
-        model = MultiLayerLSTM(features_dim, 64, 2, out_features).to(device)
+        model = MultiLayerLSTM(features_dim, 64, 4, out_features).to(device)
         print('lstm')
     elif 'bidirectional' in exp:
         from baseline.LSTM_GRU_CLDNN import BidirectionalLSTM
-        model = BidirectionalLSTM(features_dim, 64, 2, out_features).to(device)
+        model = BidirectionalLSTM(features_dim, 64, 4, out_features).to(device)
         print('bidirectional')
     elif 'cldnn' in exp:
         from baseline.LSTM_GRU_CLDNN import CLDNN
-        model = CLDNN(features_dim, 64, 2, out_features).to(device)
+        model = CLDNN(features_dim, 64, 4, out_features).to(device)
         print('cldnn')
     optimizer = optim.AdamW(model.parameters(), lr=lr)
 
@@ -74,12 +69,12 @@ def train(train_loader, val_loader, scheme, fold, exp):
     recall_metric = Recall(task='binary').cuda()
     
     
-    scheduler = optim.lr_scheduler.StepLR(optimizer, 30, gamma=0.1)
+    # scheduler = optim.lr_scheduler.StepLR(optimizer, 30, gamma=0.1)
 
 
     # -------------------------------------------------------------------------
     
-    def iter_dataloader(data_loader, model, training, exp):
+    def iter_dataloader(data_loader, model, training, exp, aug):
     
         running_loss = 0.0
         labels_all = torch.empty((0)).to(device)
@@ -90,10 +85,41 @@ def train(train_loader, val_loader, scheme, fold, exp):
             
             # Move to device
             inputs, labels = inputs.to(device, dtype=torch.float32), labels.to(device, dtype=torch.float32)
+            
+            if aug == 'fft':
+                inputs_trans = inputs.clone()
+                fft_real = torch.zeros(inputs_trans.size())
+                fft_imag = torch.zeros(inputs_trans.size())
+                fft_result = torch.fft.rfft(inputs_trans, n=300)
+                fft_real = fft_result.real
+                fft_imag = fft_result.imag
+                fft_real_expand = torch.zeros(inputs_trans.size()).to(device)
+                fft_imag_expand = torch.zeros(inputs_trans.size()).to(device)
+                fft_real_expand[:, :, 0:fft_real.size(2)] = fft_real
+                fft_imag_expand[:, :, 0:fft_imag.size(2)] = fft_imag
+                inputs = torch.cat([inputs, fft_real_expand, fft_imag_expand], dim=1)
+
+            # elif aug == 'stft':
+            #     inputs_trans = inputs.clone().cpu()
+            #     inputs_trans = torchaudio.transforms.MelSpectrogram(1)(inputs_trans.squeeze(0)).to(device)
+            #     inputs = torch.cat([inputs, inputs_trans], dim=1)
+
             # Clear grads
             if training == True:
                 optimizer.zero_grad()
+                if aug == 'quantize':
+                    inputs = torch.from_numpy(tsaug.Quantize(n_levels=10, prob=0.5).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
+                elif aug == 'drift':
+                    inputs = torch.from_numpy(tsaug.Drift(max_drift=(0.1,0.5), n_drift_points=5, prob=0.5, normalize=False).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
+                elif aug == 'timewrap':
+                    inputs = torch.from_numpy(tsaug.TimeWarp(n_speed_change=5, max_speed_ratio=2, prob=0.5).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
             
+            # # Visualize
+            # figure = plot(inputs[0].cpu().numpy())
+            # input_original = plot(input_original[0].cpu().numpy())
+            # input_original[0].savefig('test1.png')
+            # figure[0].savefig('test.png')
+                
             # Forward pass
             if 'mstcn' in exp or 'asformer' in exp:
                 logits = model.forward(inputs, torch.ones(inputs.size(), device=device))
@@ -142,7 +168,7 @@ def train(train_loader, val_loader, scheme, fold, exp):
 
         model.train()
 
-        metrics_train, loss_epoch_train = iter_dataloader(train_loader, model, training=True, exp=exp)
+        metrics_train, loss_epoch_train = iter_dataloader(train_loader, model, training=True, exp=exp, aug=aug)
 
         return metrics_train, loss_epoch_train
 
@@ -154,7 +180,7 @@ def train(train_loader, val_loader, scheme, fold, exp):
 
         with torch.no_grad():
 
-            metrics_val, loss_epoch_val = iter_dataloader(val_loader, model, training=False, exp=exp)
+            metrics_val, loss_epoch_val = iter_dataloader(val_loader, model, training=False, exp=exp, aug=aug)
 
         return metrics_val, loss_epoch_val
 
@@ -181,7 +207,7 @@ def train(train_loader, val_loader, scheme, fold, exp):
         print(f'Train - Loss:{loss_epoch_train:.4f}, Accuracy:{metrics_train[0]:.4f}, F1:{metrics_train[1]:.4f}, Precision:{metrics_train[2]:.4f}, Recall:{metrics_train[3]:.4f} \
                || Val - Loss:{loss_epoch_val:.4f}, Accuracy:{metrics_val[0]:.4f}, F1:{metrics_val[1]:.4f}, Precision:{metrics_val[2]:.4f}, Recall:{metrics_val[3]:.4f} Epoch:{epoch}')
 
-        if loss_epoch_val < min_val_loss and metrics_val[1] >= 0.4:
+        if loss_epoch_val < min_val_loss and metrics_val[1] >= 0.2:
             min_val_loss = loss_epoch_val
             best_metrics = metrics_val
             best_model_wts = copy.deepcopy(model.state_dict())
@@ -196,7 +222,7 @@ def train(train_loader, val_loader, scheme, fold, exp):
         #     print('Best F1 model updated: ', best_f1)
 
         # Scheduler Update
-        scheduler.step()
+        # scheduler.step()
 
         tb.add_scalars('Loss',{'Training' : loss_epoch_train, 'Validation' : loss_epoch_val}, epoch)
         tb.add_scalars('Accuracy',{'Training' : metrics_train[0], 'Validation' : metrics_val[0]}, epoch)
