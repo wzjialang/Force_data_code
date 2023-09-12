@@ -11,6 +11,16 @@ import tsaug
 from tsaug.visualization import plot
 # -----------------------------------------------------------------------------
 def train(train_loader, val_loader, scheme, fold, exp, aug):
+    seed = 2
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    # torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+    np.random.seed(seed)  # Numpy module.
+    random.seed(seed)  # Python random module.
+    torch.manual_seed(seed)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+
     if aug == 'fft':
         features_dim = 3
     else:
@@ -90,7 +100,7 @@ def train(train_loader, val_loader, scheme, fold, exp, aug):
                 inputs_trans = inputs.clone()
                 fft_real = torch.zeros(inputs_trans.size())
                 fft_imag = torch.zeros(inputs_trans.size())
-                fft_result = torch.fft.rfft(inputs_trans, n=300)
+                fft_result = torch.fft.rfft(inputs_trans)
                 fft_real = fft_result.real
                 fft_imag = fft_result.imag
                 fft_real_expand = torch.zeros(inputs_trans.size()).to(device)
@@ -110,7 +120,7 @@ def train(train_loader, val_loader, scheme, fold, exp, aug):
                 if aug == 'quantize':
                     inputs = torch.from_numpy(tsaug.Quantize(n_levels=10, prob=0.5).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
                 elif aug == 'drift':
-                    inputs = torch.from_numpy(tsaug.Drift(max_drift=(0.1,0.5), n_drift_points=5, prob=0.5, normalize=False).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
+                    inputs = torch.from_numpy(tsaug.Drift(max_drift=0.5, n_drift_points=5, prob=0.5, normalize=False).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
                 elif aug == 'timewrap':
                     inputs = torch.from_numpy(tsaug.TimeWarp(n_speed_change=5, max_speed_ratio=2, prob=0.5).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
             

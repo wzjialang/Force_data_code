@@ -30,11 +30,11 @@ nohup python experiment.py -exp bidirectional_vloss_1e4_quantize -aug quantize >
 nohup python experiment.py -exp simpletcn_vloss_1e4_quantize -aug quantize >./simpletcn_vloss_1e4_quantize.txt &
 
 # drift
-nohup python experiment.py -exp lstm_vloss_1e4_drift -aug drift >./lstm_vloss_1e4_drift.txt &
-nohup python experiment.py -exp gru_vloss_1e4_drift -aug drift >./gru_vloss_1e4_drift.txt &
-nohup python experiment.py -exp cldnn_vloss_1e4_drift -aug drift >./cldnn_vloss_1e4_drift.txt &
-nohup python experiment.py -exp bidirectional_vloss_1e4_drift -aug drift >./bidirectional_vloss_1e4_drift.txt &
-nohup python experiment.py -exp simpletcn_vloss_1e4_drift -aug drift >./simpletcn_vloss_1e4_drift.txt &
+nohup python experiment.py -exp lstm_vloss_1e4_drift_05 -aug drift >./lstm_vloss_1e4_drift_05.txt &
+nohup python experiment.py -exp gru_vloss_1e4_drift_05 -aug drift >./gru_vloss_1e4_drift_05.txt &
+nohup python experiment.py -exp cldnn_vloss_1e4_drift_05 -aug drift >./cldnn_vloss_1e4_drift_05.txt &
+nohup python experiment.py -exp bidirectional_vloss_1e4_drift_05 -aug drift >./bidirectional_vloss_1e4_drift_05.txt &
+nohup python experiment.py -exp simpletcn_vloss_1e4_drift_05 -aug drift >./simpletcn_vloss_1e4_drift_05.txt &
 
 # timewrap
 nohup python experiment.py -exp lstm_vloss_1e4_timewrap -aug timewrap >./lstm_vloss_1e4_timewrap.txt &

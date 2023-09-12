@@ -2,8 +2,19 @@ import torch
 import pandas as pd
 import os
 from sklearn.preprocessing import StandardScaler
-os.environ['CUDA_VISIBLE_DEVICES']= '0'
+import random
+import numpy as np
 
+os.environ['CUDA_VISIBLE_DEVICES']= '0'
+seed = 2
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+# torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+np.random.seed(seed)  # Numpy module.
+random.seed(seed)  # Python random module.
+torch.manual_seed(seed)
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.deterministic = True
 # Device
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print(device)

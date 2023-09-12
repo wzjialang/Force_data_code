@@ -5,15 +5,6 @@ from baseline.models import *
 import time
 import argparse
 
-seed = 2
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-# torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
-np.random.seed(seed)  # Numpy module.
-random.seed(seed)  # Python random module.
-torch.manual_seed(seed)
-torch.backends.cudnn.benchmark = False
-torch.backends.cudnn.deterministic = True
 
 def cross_valid(fold, scheme, exp, aug):
 
@@ -39,7 +30,7 @@ args = parser.parse_args()
 
 # for scheme in schemes:
 schemes = ['random_split','louo']
-fold_list = ['1','2','3','4','5','6']
+fold_list = ['1','2', '3', '4', '5', '6']
 
 # Training on each fold
 for scheme in schemes:
@@ -55,10 +46,10 @@ for scheme in schemes:
         fold_min_val_loss, fold_best_metrics, fold_best_epoch = cross_valid(fold, scheme, exp=args.exp, aug=args.aug)
 
         folds_loss.append(fold_min_val_loss)
-        folds_acc.append(fold_best_metrics[0])
-        folds_f1.append(fold_best_metrics[1])
-        folds_prec.append(fold_best_metrics[2])
-        folds_rec.append(fold_best_metrics[3])
+        folds_acc.append(fold_best_metrics[0].cpu().numpy())
+        folds_f1.append(fold_best_metrics[1].cpu().numpy())
+        folds_prec.append(fold_best_metrics[2].cpu().numpy())
+        folds_rec.append(fold_best_metrics[3].cpu().numpy())
         folds_epoch.append(fold_best_epoch)
 
     end = time.time()
@@ -75,6 +66,6 @@ for scheme in schemes:
         sum_prec += folds_prec[i]
         sum_rec += folds_rec[i]
 
-    print(f'Average results on {scheme}: Acc: {sum_acc/6.0:.4f}, f1-score: {sum_f1/6.0:.4f}, Precision: {sum_prec/6.0:.4f}, Recall: {sum_rec/6.0:.4f}')
-
+    print(f'Average results on {scheme}: Acc: {np.mean(folds_acc)*100:.2f}±{np.std(folds_acc)*100:.2f}, f1-score: {np.mean(folds_f1)*100:.2f}±{np.std(folds_f1)*100:.2f} Precision: {np.mean(folds_prec)*100:.2f}±{np.std(folds_prec)*100:.2f}, Recall: {np.mean(folds_rec)*100:.2f}±{np.std(folds_rec)*100:.2f}')
+    
 

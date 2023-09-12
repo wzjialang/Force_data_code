@@ -864,7 +864,7 @@ Train - Loss:0.3510, Accuracy:0.8832, F1:0.8701, Precision:0.9390, Recall:0.8105
 Train - Loss:0.3718, Accuracy:0.8731, F1:0.8588, Precision:0.9268, Recall:0.8000                || Val - Loss:0.4429, Accuracy:0.8205, F1:0.8108, Precision:0.9375, Recall:0.7143 Epoch:100
 Best reults | Val Loss: 0.3760, Epoch: 89 | Acc: 0.8462, f1-score: 0.8333, Precision: 1.0000, Recall: 0.7143
 
->>> Training complete: 26m 42s
+>>> Training complete: 66m 23s
 
 Fold 1 -- Acc: 0.6500, f1-score: 0.6957, Precision 0.5926. Recall: 0.8421 | Loss: 0.6392 | Epoch: 21
 Fold 2 -- Acc: 0.8250, f1-score: 0.7200, Precision 1.0000. Recall: 0.5625 | Loss: 0.4190 | Epoch: 97
@@ -872,7 +872,7 @@ Fold 3 -- Acc: 0.7436, f1-score: 0.7619, Precision 1.0000. Recall: 0.6154 | Loss
 Fold 4 -- Acc: 0.8718, f1-score: 0.8387, Precision 1.0000. Recall: 0.7222 | Loss: 0.3526 | Epoch: 89
 Fold 5 -- Acc: 0.7949, f1-score: 0.7647, Precision 0.7222. Recall: 0.8125 | Loss: 0.5056 | Epoch: 51
 Fold 6 -- Acc: 0.8462, f1-score: 0.8333, Precision 1.0000. Recall: 0.7143 | Loss: 0.3760 | Epoch: 89
-Average results on random_split: Acc: 0.7886, f1-score: 0.7691, Precision: 0.8858, Recall: 0.7115
+Average results on random_split: Acc: 78.86±7.40, f1-score: 76.91±5.30 Precision: 88.58±16.58, Recall: 71.15±9.90
 >>> Training on scheme:  louo
 Training on fold 1
 lstm
@@ -1630,7 +1630,7 @@ Train - Loss:0.2856, Accuracy:0.9146, F1:0.9110, Precision:0.9457, Recall:0.8788
 Train - Loss:0.2820, Accuracy:0.9146, F1:0.9110, Precision:0.9457, Recall:0.8788                || Val - Loss:1.0060, Accuracy:0.5676, F1:0.1111, Precision:1.0000, Recall:0.0588 Epoch:100
 Best reults | Val Loss: 0.6485, Epoch: 16 | Acc: 0.5946, f1-score: 0.2857, Precision: 0.7500, Recall: 0.1765
 
->>> Training complete: 25m 21s
+>>> Training complete: 61m 37s
 
 Fold 1 -- Acc: 0.5526, f1-score: 0.6667, Precision 0.5152. Recall: 0.9444 | Loss: 0.6500 | Epoch: 20
 Fold 2 -- Acc: 0.8364, f1-score: 0.8767, Precision 0.8421. Recall: 0.9143 | Loss: 0.4529 | Epoch: 78
@@ -1638,4 +1638,4 @@ Fold 3 -- Acc: 0.8485, f1-score: 0.8000, Precision 0.8333. Recall: 0.7692 | Loss
 Fold 4 -- Acc: 0.8182, f1-score: 0.7692, Precision 0.7692. Recall: 0.7692 | Loss: 0.4437 | Epoch: 40
 Fold 5 -- Acc: 0.9500, f1-score: 0.9474, Precision 1.0000. Recall: 0.9000 | Loss: 0.2830 | Epoch: 30
 Fold 6 -- Acc: 0.5946, f1-score: 0.2857, Precision 0.7500. Recall: 0.1765 | Loss: 0.6485 | Epoch: 16
-Average results on louo: Acc: 0.7667, f1-score: 0.7243, Precision: 0.7850, Recall: 0.7456
+Average results on louo: Acc: 76.67±14.33, f1-score: 72.43±21.46 Precision: 78.50±14.50, Recall: 74.56±26.36
