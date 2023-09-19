@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 import random
 import numpy as np
 
-os.environ['CUDA_VISIBLE_DEVICES']= '0'
+os.environ['CUDA_VISIBLE_DEVICES']= '1'
 seed = 2
 torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)

@@ -6,7 +6,7 @@ import numpy as np
 import os
 import pickle
 from utils import *
-
+from augmentations import gaussian_transform, temporal_swifting_transform
 
 class force_data(Dataset):
     def __init__(self, data_dir, splits, fold, is_train=None):
@@ -56,7 +56,9 @@ class force_data(Dataset):
             else:
                 index = np.random.randint(0,force_data.shape[1] - 300)
                 force_data = force_data[:,index:index+300]
-        
+
+            # force_data = temporal_swifting_transform(force_data)
+            # force_data = gaussian_transform(force_data)
         
         ############### Labels ################
         label = 1 if 'expert' in attempt else 0 # 1 for expert, 0 for novice

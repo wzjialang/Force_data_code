@@ -42,3 +42,18 @@ nohup python experiment.py -exp gru_vloss_1e4_timewrap -aug timewrap >./gru_vlos
 nohup python experiment.py -exp cldnn_vloss_1e4_timewrap -aug timewrap >./cldnn_vloss_1e4_timewrap.txt &
 nohup python experiment.py -exp bidirectional_vloss_1e4_timewrap -aug timewrap >./bidirectional_vloss_1e4_timewrap.txt &
 nohup python experiment.py -exp simpletcn_vloss_1e4_timewrap -aug timewrap >./simpletcn_vloss_1e4_timewrap.txt &
+
+
+# gaussian
+nohup python experiment.py -exp lstm_vloss_1e4_gaussian >./lstm_vloss_1e4_gaussian.txt &
+nohup python experiment.py -exp gru_vloss_1e4_gaussian >./gru_vloss_1e4_gaussian.txt &
+nohup python experiment.py -exp cldnn_vloss_1e4_gaussian >./cldnn_vloss_1e4_gaussian.txt &
+nohup python experiment.py -exp bidirectional_vloss_1e4_gaussian >./bidirectional_vloss_1e4_gaussian.txt &
+nohup python experiment.py -exp simpletcn_vloss_1e4_gaussian >./simpletcn_vloss_1e4_gaussian.txt &
+
+# temporal_swifting_transform
+nohup python experiment.py -exp lstm_vloss_1e4_tst >./lstm_vloss_1e4_tst.txt &
+nohup python experiment.py -exp gru_vloss_1e4_tst >./gru_vloss_1e4_tst.txt &
+nohup python experiment.py -exp cldnn_vloss_1e4_tst >./cldnn_vloss_1e4_tst.txt &
+nohup python experiment.py -exp bidirectional_vloss_1e4_tst >./bidirectional_vloss_1e4_tst.txt &
+nohup python experiment.py -exp simpletcn_vloss_1e4_tst >./simpletcn_vloss_1e4_tst.txt &

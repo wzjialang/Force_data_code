@@ -9,6 +9,8 @@ from baseline.models import *
 from torchmetrics import Accuracy, F1Score, Precision, Recall
 import tsaug
 from tsaug.visualization import plot
+from augmentations import gaussian_transform, temporal_swifting_transform
+
 # -----------------------------------------------------------------------------
 def train(train_loader, val_loader, scheme, fold, exp, aug):
     seed = 2
@@ -115,20 +117,66 @@ def train(train_loader, val_loader, scheme, fold, exp, aug):
             #     inputs = torch.cat([inputs, inputs_trans], dim=1)
 
             # Clear grads
-            if training == True:
-                optimizer.zero_grad()
-                if aug == 'quantize':
-                    inputs = torch.from_numpy(tsaug.Quantize(n_levels=10, prob=0.5).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
-                elif aug == 'drift':
-                    inputs = torch.from_numpy(tsaug.Drift(max_drift=0.5, n_drift_points=5, prob=0.5, normalize=False).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
-                elif aug == 'timewrap':
-                    inputs = torch.from_numpy(tsaug.TimeWarp(n_speed_change=5, max_speed_ratio=2, prob=0.5).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
+            # if training == True:
+            #     optimizer.zero_grad()
+            #     if aug == 'quantize':
+            #         inputs = torch.from_numpy(tsaug.Quantize(n_levels=10, prob=0.5).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
+            #     elif aug == 'drift':
+            #         inputs = torch.from_numpy(tsaug.Drift(max_drift=(0.1,0.5), n_drift_points=5, prob=0.5, normalize=False).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
+            #     elif aug == 'timewrap':
+            #         inputs = torch.from_numpy(tsaug.TimeWarp(n_speed_change=5, max_speed_ratio=2, prob=0.5).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
             
-            # # Visualize
-            # figure = plot(inputs[0].cpu().numpy())
-            # input_original = plot(input_original[0].cpu().numpy())
-            # input_original[0].savefig('test1.png')
-            # figure[0].savefig('test.png')
+            # Visualize
+            inputs_quantize = torch.from_numpy(tsaug.Quantize(n_levels=10).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
+            inputs_drift = torch.from_numpy(tsaug.Drift(max_drift=(0.1,0.5), n_drift_points=5, normalize=False).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
+            inputs_timewrap = torch.from_numpy(tsaug.TimeWarp(n_speed_change=5, max_speed_ratio=2).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
+            inputs_tst = temporal_swifting_transform(inputs[0])
+            inputs_gauss = gaussian_transform(inputs[0])
+            # inputs_trans = inputs.clone()
+            # fft_real = torch.zeros(inputs_trans.size())
+            # fft_imag = torch.zeros(inputs_trans.size())
+            # fft_result = torch.fft.rfft(inputs_trans)
+            # fft_real = fft_result.real
+            # fft_imag = fft_result.imag
+            # fft_real_expand = torch.zeros(inputs_trans.size()).to(device)
+            # fft_imag_expand = torch.zeros(inputs_trans.size()).to(device)
+            # fft_real_expand[:, :, 0:fft_real.size(2)] = fft_real
+            # fft_imag_expand[:, :, 0:fft_imag.size(2)] = fft_imag
+
+            inputs = plot(inputs[0].cpu().numpy())
+            inputs_quantize = plot(inputs_quantize[0].cpu().numpy())
+            inputs_drift = plot(inputs_drift[0].cpu().numpy())
+            inputs_timewrap = plot(inputs_timewrap[0].cpu().numpy())
+            inputs_tst = plot(inputs_tst.cpu().numpy())
+            inputs_gauss = plot(inputs_gauss.cpu().numpy())
+            # inputs_fft_real = plot(fft_real_expand[0].cpu().numpy())
+            # inputs_fft_imag = plot(fft_imag_expand[0].cpu().numpy())
+
+            inputs[1].set_xlabel('Time Stop')
+            inputs[1].set_ylabel('Force Value')
+            inputs_quantize[1].set_xlabel('Time Stop')
+            inputs_quantize[1].set_ylabel('Force Value')
+            inputs_drift[1].set_xlabel('Time Stop')
+            inputs_drift[1].set_ylabel('Force Value')
+            inputs_timewrap[1].set_xlabel('Time Stop')
+            inputs_timewrap[1].set_ylabel('Force Value')
+            inputs_tst[1].set_xlabel('Time Stop')
+            inputs_tst[1].set_ylabel('Force Value')
+            inputs_gauss[1].set_xlabel('Time Stop')
+            inputs_gauss[1].set_ylabel('Force Value')
+            # inputs_fft_real[1].set_xlabel('Time Stop')
+            # inputs_fft_real[1].set_ylabel('Force Value')
+            # inputs_fft_imag[1].set_xlabel('Time Stop')
+            # inputs_fft_imag[1].set_ylabel('Force Value')
+
+
+            inputs[0].savefig('input_ori.png', bbox_inches='tight')
+            inputs_quantize[0].savefig('input_quantize.png', bbox_inches='tight')
+            inputs_drift[0].savefig('input_drift.png', bbox_inches='tight')
+            inputs_timewrap[0].savefig('input_timewrap.png', bbox_inches='tight')
+            inputs_tst[0].savefig('input_tst.png', bbox_inches='tight')
+            inputs_gauss[0].savefig('input_gauss.png', bbox_inches='tight')
+
                 
             # Forward pass
             if 'mstcn' in exp or 'asformer' in exp:
