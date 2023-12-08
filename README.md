@@ -36,65 +36,27 @@ The force dataset published in our paper could be downloaded [here](https://doi.
 - tlib
 ```
 
-- Simple example of dependency installation:
+3. Train & test models and augmentations:
 ```
-conda create -n sraqa python=3.8
-conda activate sraqa
-conda install pytorch==1.10.2 torchvision==0.11.3 torchaudio==0.10.2 cudatoolkit=10.2 -c pytorch
-git clone https://github.com/thuml/Transfer-Learning-Library.git
-cd Transfer-Learning-Library/
-python setup.py install
-pip install -r requirements.txt
+python experiment.py -exp model_name -aug {augmentation_name}
 ```
-
-3. Train & test models:
-- For CP task
-```
-python main_ours.py /path/to/your/dataset \
-        -d TEE -s S -t R --task_type cp_reg --epochs 100 -i 400 --gpu_id cuda:0 --lr 0.0001 \
-        -b 32 --log logs/SR-AQA/TEE_cp --resize-size 224 --fs_layer 1 1 1 0 0 --lambda_scl 1 --lambda_tl 1 --t_data_ratio 10
-```
-- For GI task
-```
-python main_ours.py /path/to/your/dataset \
-        -d TEE -s S -t R --task_type gi_reg --epochs 100 -i 400 --gpu_id cuda:0 --lr 0.0001 \
-        -b 32 --log logs/SR-AQA/TEE_gi --resize-size 224 --fs_layer 1 1 1 0 0 --lambda_scl 1 --lambda_tl 1 --t_data_ratio 10
-```
-
-*'--fs_layer 1 1 1 0 0'* means replacing the $1- 3^{rd}$ batch normalization layers of ResNet-50 with the UFS.<br>
-*'--lambda_scl'* means the lambda for SCL loss, if *'--lambda_scl'* > 0, then using SCL loss.<br>
-*'--lambda_tl'* means the lambda for TL loss, if *'--lambda_tl'* > 0, then using TL loss.<br>
-*'--t_data_ratio X'* means using X-tenths of unlabeled real data for training.
-
-## Acknowledge
-Appreciate the work from the following repositories:
-* [thuml/Transfer-Learning-Library](https://github.com/thuml/Transfer-Learning-Library)
-* [suhyeonlee/WildNet](https://github.com/suhyeonlee/WildNet)
+model_name = [gru, lstm, bidrectional, cldnn, simpletcn, transformer].<br>
+augmentation_name = [fft, drift, quantize, timewarp, gaussian, jittering].<br>
 
 ## Cite
 If this repository is useful for your research, please cite:
 ```
-@InProceedings{10.1007/978-3-031-43996-4_15,
-author="Xu, Jialang
-and Jin, Yueming
-and Martin, Bruce
-and Smith, Andrew
-and Wright, Susan
-and Stoyanov, Danail
-and Mazomenos, Evangelos B.",
-editor="Greenspan, Hayit
-and Madabhushi, Anant
-and Mousavi, Parvin
-and Salcudean, Septimiu
-and Duncan, James
-and Syeda-Mahmood, Tanveer
-and Taylor, Russell",
-title="Regressing Simulation to Real: Unsupervised Domain Adaptation for Automated Quality Assessment in Transoesophageal Echocardiography",
-booktitle="Medical Image Computing and Computer Assisted Intervention -- MICCAI 2023",
-year="2023",
-publisher="Springer Nature Switzerland",
-address="Cham",
-pages="154--164",
-isbn="978-3-031-43996-4"
+@Article{xu2023deep,
+AUTHOR = {Xu, Jialang and Anastasiou, Dimitrios and Booker, James and Burton, Oliver E. and Layard Horsfall, Hugo and Salvadores Fernandez, Carmen and Xue, Yang and Stoyanov, Danail and Tiwari, Manish K. and Marcus, Hani J. and Mazomenos, Evangelos B.},
+TITLE = {A Deep Learning Approach to Classify Surgical Skill in Microsurgery Using Force Data from a Novel Sensorised Surgical Glove},
+JOURNAL = {Sensors},
+VOLUME = {23},
+YEAR = {2023},
+NUMBER = {21},
+ARTICLE-NUMBER = {8947},
+URL = {https://www.mdpi.com/1424-8220/23/21/8947},
+PubMedID = {37960645},
+ISSN = {1424-8220},
+DOI = {10.3390/s23218947}
 }
 ```
