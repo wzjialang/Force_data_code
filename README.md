@@ -40,8 +40,8 @@ The force dataset published in our paper could be downloaded [here](https://doi.
 ```
 python experiment.py -exp model_name -aug {augmentation_name}
 ```
-model_name = [gru, lstm, bidrectional, cldnn, simpletcn, transformer].<br>
-augmentation_name = [fft, drift, quantize, timewarp, gaussian, jittering].<br>
+*model_name = [gru, lstm, bidrectional, cldnn, simpletcn, transformer].<br>*
+*augmentation_name = [fft, drift, quantize, timewarp, gaussian, jittering].<br>*
 
 ## Cite
 If this repository is useful for your research, please cite:
