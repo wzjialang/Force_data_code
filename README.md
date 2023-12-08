@@ -8,8 +8,10 @@ This repository provides the official PyTorch implementation of the following pa
 Microsurgery serves as the foundation for numerous operative procedures. Given its highly technical nature, the assessment of surgical skill becomes an essential component of clinical practice and microsurgery education. The interaction forces between surgical tools and tissues play a pivotal role in surgical success, making them a valuable indicator of surgical skill. In this study, we employ six distinct deep learning architectures (LSTM, GRU, Bi-LSTM, CLDNN, TCN, Transformer) specifically designed for the classification of surgical skill levels. We use force data obtained from a novel sensorized surgical glove utilized during a microsurgical task. To enhance the performance of our models, we propose six data augmentation techniques. The proposed frameworks are accompanied by a comprehensive analysis, both quantitative and qualitative, including experiments conducted with two cross-validation schemes and interpretable visualizations of the network’s decision-making process. Our experimental results show that CLDNN and TCN are the top-performing models, achieving impressive accuracy rates of 96.16% and 97.45%, respectively. This not only underscores the effectiveness of our proposed architectures, but also serves as compelling evidence that the force data obtained through the sensorized surgical glove contains valuable information regarding surgical skill.
 
 ## Content
-### Architecture
-<img src="https://github.com/wzjialang/SR-AQA/blob/main/figure/framework_simple.png" height="500"/>
+### Results
+<img src="https://github.com/wzjialang/Force_data_code/blob/main/figure/Result1-2.png" width="200"/>
+<img src="https://github.com/wzjialang/Force_data_code/blob/main/figure/Result3.png" width="200"/>
+<img src="https://github.com/wzjialang/Force_data_code/blob/main/figure/Result4.png" width="200"/>
 
 
 ### Dataset
