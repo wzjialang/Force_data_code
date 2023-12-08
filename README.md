@@ -9,9 +9,9 @@ Microsurgery serves as the foundation for numerous operative procedures. Given i
 
 ## Content
 ### Results
-<img src="https://github.com/wzjialang/Force_data_code/blob/main/figure/Result1-2.png" width="200"/>
-<img src="https://github.com/wzjialang/Force_data_code/blob/main/figure/Result3.png" width="200"/>
-<img src="https://github.com/wzjialang/Force_data_code/blob/main/figure/Result4.png" width="200"/>
+<img src="https://github.com/wzjialang/Force_data_code/blob/main/figure/Result1-2.png" height="300">
+<img src="https://github.com/wzjialang/Force_data_code/blob/main/figure/Result3.png" height="250">
+<img src="https://github.com/wzjialang/Force_data_code/blob/main/figure/Result4.png" height="250">
 
 
 ### Dataset
