@@ -6,10 +6,10 @@ import numpy as np
 import os
 import pickle
 from utils import *
-
+from force.augmentations_gt_tst import gaussian_transform, temporal_swifting_transform
 
 class force_data(Dataset):
-    def __init__(self, data_dir, splits, fold, is_train=None):
+    def __init__(self, data_dir, splits, fold, is_train=None, is_aug=None):
 
         self.data_dir = data_dir
         self.is_train = is_train
@@ -32,6 +32,7 @@ class force_data(Dataset):
             self.attempts_set = data['fold_' + fold]
             
         self.scaler = normalize_data(data_dir) # scaler for force data
+        self.is_aug = is_aug
 
     def __len__(self):
         return len(self.attempts_set)
@@ -56,7 +57,11 @@ class force_data(Dataset):
             else:
                 index = np.random.randint(0,force_data.shape[1] - 300)
                 force_data = force_data[:,index:index+300]
-        
+
+            if self.is_aug == 'gaussian':
+                force_data = gaussian_transform(force_data)
+            elif self.is_aug == 'tst':
+                force_data = temporal_swifting_transform(force_data)
         
         ############### Labels ################
         label = 1 if 'expert' in attempt else 0 # 1 for expert, 0 for novice
@@ -66,9 +71,8 @@ class force_data(Dataset):
 
 
 # Dataset
-def dataset(scheme,fold,batch_size_train,batch_size_val):
+def dataset(scheme,fold,batch_size_train,batch_size_val,aug):
     # Paths for videos and annotations (besed on the cross-validation scheme)
-    
     scheme = scheme
     fold = fold
     cwd = os.getcwd()
@@ -76,7 +80,7 @@ def dataset(scheme,fold,batch_size_train,batch_size_val):
     splits = os.path.join(cwd,scheme + '.pkl')
 
     # Data Splits
-    train_set = force_data(data_dir, splits, fold, is_train=True)
+    train_set = force_data(data_dir, splits, fold, is_train=True, is_aug=aug)
     val_set = force_data(data_dir, splits, fold, is_train=False)
 
     # Dataloaders
@@ -88,9 +92,8 @@ def dataset(scheme,fold,batch_size_train,batch_size_val):
 
 
 if __name__ == '__main__':
-
     # Test that everything is working fine
-    train, val = dataset(scheme='louo',fold='1',batch_size_train=batch_size_train,batch_size_val=batch_size_val)
+    train, val = dataset(scheme='louo',fold='1',batch_size_train=batch_size_train,batch_size_val=batch_size_val,aug='gaussian')
 
     inputs, labels = next(iter(train))
 

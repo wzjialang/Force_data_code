@@ -5,13 +5,15 @@ from torch import nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 from utils import *
-from models import *
+from baseline.models import *
 from torchmetrics import Accuracy, F1Score, Precision, Recall
+import tsaug
+from tsaug.visualization import plot
+from force.augmentations_gt_tst import gaussian_transform, temporal_swifting_transform
+import itertools
 
 # -----------------------------------------------------------------------------
-
-def train(train_loader, val_loader, scheme, fold):
-
+def train(train_loader, val_loader, scheme, fold, exp, aug):
     seed = 2
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
@@ -21,15 +23,61 @@ def train(train_loader, val_loader, scheme, fold):
     torch.manual_seed(seed)
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
+
+    if aug == 'fft':
+        features_dim = 3
+    else:
+        features_dim = 1
     # -------------------------------------------------------------------------
     # Import model
     # -------------------------------------------------------------------------
-    model = force_model(embed_dim=16).to(device)
+    if 'simpletcn' in exp:
+        model = force_model(features_dim, embed_dim=16).to(device)
+        print('simpletcn')
+    elif 'mstcn' in exp:
+        from baseline.model_MSTCN import MultiStageModel
+        num_stages = 4
+        num_layers = 10
+        model = MultiStageModel(num_stages, num_layers, num_f_maps, features_dim, out_features).to(device)
+        print('mstcn')
+    elif 'ms2' in exp:
+        from baseline.model_MSTCN2 import MS_TCN2
+        num_layers_PG = 11
+        num_layers_R = 10
+        num_R = 3
+        model = MS_TCN2(num_layers_PG, num_layers_R, num_R, num_f_maps, features_dim, out_features).to(device)
+        print('ms2')
+    elif 'asformer' in exp:
+        from baseline.model_ASFormer import MyTransformer
+        num_layers = 10
+        channel_mask_rate = 0.3
+        model = MyTransformer(3, num_layers, 2, 2, num_f_maps, features_dim, out_features, channel_mask_rate).to(device)
+        print('asformer')
+    elif 'gru' in exp:
+        from baseline.LSTM_GRU_CLDNN import MultiLayerGRU
+        model = MultiLayerGRU(features_dim, 64, 4, out_features).to(device)
+        print('gru')
+    elif 'lstm' in exp:
+        from baseline.LSTM_GRU_CLDNN import MultiLayerLSTM
+        model = MultiLayerLSTM(features_dim, 64, 4, out_features).to(device)
+        print('lstm')
+    elif 'bidirectional' in exp:
+        from baseline.LSTM_GRU_CLDNN import BidirectionalLSTM
+        model = BidirectionalLSTM(features_dim, 64, 4, out_features).to(device)
+        print('bidirectional')
+    elif 'cldnn' in exp:
+        from baseline.LSTM_GRU_CLDNN import CLDNN
+        model = CLDNN(features_dim, 64, 4, out_features).to(device)
+        print('cldnn')
+    elif 'transformer' in exp:
+        from baseline.model_transformer import transformer
+        model = transformer(embed_dim=8, dropout=0.2)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
 
     # Loss function
     criterion = nn.BCEWithLogitsLoss()
-    
+    sig_m = nn.Sigmoid()
+
     # Metrics
     acc_metric = Accuracy(task='binary').cuda()
     f1_score_metric = F1Score(task='binary').cuda()
@@ -37,12 +85,12 @@ def train(train_loader, val_loader, scheme, fold):
     recall_metric = Recall(task='binary').cuda()
     
     
-    scheduler = optim.lr_scheduler.StepLR(optimizer, 30, gamma=0.1)
+    # scheduler = optim.lr_scheduler.StepLR(optimizer, 30, gamma=0.1)
 
 
     # -------------------------------------------------------------------------
     
-    def iter_dataloader(data_loader,model,training):
+    def iter_dataloader(data_loader, model, training, exp, aug):
     
         running_loss = 0.0
         labels_all = torch.empty((0)).to(device)
@@ -53,15 +101,51 @@ def train(train_loader, val_loader, scheme, fold):
             
             # Move to device
             inputs, labels = inputs.to(device, dtype=torch.float32), labels.to(device, dtype=torch.float32)
+            
+            if aug == 'fft':
+                inputs_trans = inputs.clone()
+                fft_real = torch.zeros(inputs_trans.size())
+                fft_imag = torch.zeros(inputs_trans.size())
+                fft_result = torch.fft.rfft(inputs_trans)
+                fft_real = fft_result.real
+                fft_imag = fft_result.imag
+                fft_real_expand = torch.zeros(inputs_trans.size()).to(device)
+                fft_imag_expand = torch.zeros(inputs_trans.size()).to(device)
+                fft_real_expand[:, :, 0:fft_real.size(2)] = fft_real
+                fft_imag_expand[:, :, 0:fft_imag.size(2)] = fft_imag
+                inputs = torch.cat([inputs, fft_real_expand, fft_imag_expand], dim=1)
+
+            # elif aug == 'stft':
+            #     inputs_trans = inputs.clone().cpu()
+            #     inputs_trans = torchaudio.transforms.MelSpectrogram(1)(inputs_trans.squeeze(0)).to(device)
+            #     inputs = torch.cat([inputs, inputs_trans], dim=1)
+
             # Clear grads
             if training == True:
                 optimizer.zero_grad()
-            
+                if aug == 'quantize':
+                    inputs = torch.from_numpy(tsaug.Quantize(n_levels=10, prob=0.5).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
+                elif aug == 'drift':
+                    inputs = torch.from_numpy(tsaug.Drift(max_drift=(0.1,0.5), n_drift_points=5, prob=0.5, normalize=False).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
+                elif aug == 'timewrap':
+                    inputs = torch.from_numpy(tsaug.TimeWarp(n_speed_change=5, max_speed_ratio=2, prob=0.5).augment(inputs.permute(0,2,1).cpu().numpy())).to(device, dtype=torch.float32).permute(0,2,1)
+             
             # Forward pass
-            logits = model.forward(inputs)
-
-            # Loss  
-            batch_loss = criterion(logits,labels)
+            if 'mstcn' in exp or 'asformer' in exp:
+                logits = model.forward(inputs, torch.ones(inputs.size(), device=device))
+            elif 'ms2' in exp:
+                logits = model.forward(inputs)
+            else:
+                logits = model.forward(inputs)
+                batch_loss = criterion(logits,labels)
+                logits = (logits >= 0.0).int()
+            if 'ms2' in exp or 'mstcn' in exp or 'asformer' in exp:
+                batch_loss = 0
+                for p in logits:
+                    batch_loss += criterion(p, labels)
+                batch_loss /= float(len(logits))
+                logits = (sig_m(logits[-1])>=0.5).int()
+            
             
             if training == True:
                 # Backprop
@@ -76,7 +160,6 @@ def train(train_loader, val_loader, scheme, fold):
             labels_all = torch.cat((labels_all, labels), 0)
             output_all = torch.cat((output_all, logits), 0)
             
-        
         # Metrics
         acc = acc_metric(output_all,labels_all)
         f1 = f1_score_metric(output_all,labels_all)
@@ -95,7 +178,7 @@ def train(train_loader, val_loader, scheme, fold):
 
         model.train()
 
-        metrics_train, loss_epoch_train = iter_dataloader(train_loader, model, training=True)
+        metrics_train, loss_epoch_train = iter_dataloader(train_loader, model, training=True, exp=exp, aug=aug)
 
         return metrics_train, loss_epoch_train
 
@@ -107,7 +190,7 @@ def train(train_loader, val_loader, scheme, fold):
 
         with torch.no_grad():
 
-            metrics_val, loss_epoch_val = iter_dataloader(val_loader, model, training=False)
+            metrics_val, loss_epoch_val = iter_dataloader(val_loader, model, training=False, exp=exp, aug=aug)
 
         return metrics_val, loss_epoch_val
 
@@ -119,7 +202,7 @@ def train(train_loader, val_loader, scheme, fold):
     min_val_loss = np.inf
 
     # TensorBoard
-    log_dir = os.path.join(os.getcwd(),'logs',scheme,fold)
+    log_dir = os.path.join(os.getcwd(),'logs', exp, scheme,fold)
     tb = SummaryWriter(log_dir)
 
     # -------------------------------------------------------------------------
@@ -131,22 +214,170 @@ def train(train_loader, val_loader, scheme, fold):
 
         metrics_train, loss_epoch_train = training(model, train_loader)
         metrics_val, loss_epoch_val = testing(model, val_loader)
-        print(f'Train - Loss: {loss_epoch_train:.4f}, Accuracy:{metrics_train[0]:.4f} || Val - Loss: {loss_epoch_val:.4f}, Accuracy:{metrics_val[0]:.4f}, Epoch:{epoch}')
+        print(f'Train - Loss:{loss_epoch_train:.4f}, Accuracy:{metrics_train[0]:.4f}, F1:{metrics_train[1]:.4f}, Precision:{metrics_train[2]:.4f}, Recall:{metrics_train[3]:.4f} \
+               || Val - Loss:{loss_epoch_val:.4f}, Accuracy:{metrics_val[0]:.4f}, F1:{metrics_val[1]:.4f}, Precision:{metrics_val[2]:.4f}, Recall:{metrics_val[3]:.4f} Epoch:{epoch}')
 
-        if loss_epoch_val < min_val_loss:
+        if loss_epoch_val < min_val_loss and metrics_val[1] >= 0.2:
             min_val_loss = loss_epoch_val
             best_metrics = metrics_val
             best_model_wts = copy.deepcopy(model.state_dict())
             best_epoch = epoch
-        
+            print('Best model updated: ', min_val_loss)
+       
         # Scheduler Update
-        scheduler.step()
+        # scheduler.step()
 
         tb.add_scalars('Loss',{'Training' : loss_epoch_train, 'Validation' : loss_epoch_val}, epoch)
-        tb.add_scalars('Accuracy',{'Training' : metrics_train[0], 'Validation' : metrics_val[0]},epoch)
+        tb.add_scalars('Accuracy',{'Training' : metrics_train[0], 'Validation' : metrics_val[0]}, epoch)
+        tb.add_scalars('F1', {'Training' : metrics_train[1], 'Validation' : metrics_val[1]}, epoch)
+        tb.add_scalars('Precision',{'Training' : metrics_train[2], 'Validation' : metrics_val[2]}, epoch)
+        tb.add_scalars('Recall',{'Training' : metrics_train[3], 'Validation' : metrics_val[3]}, epoch)
         tb.flush()
 
     tb.close()
 
 
     return best_model_wts, best_metrics, min_val_loss, best_epoch
+
+
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+def test(val_loader, scheme, fold, exp, aug):
+    seed = 2
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    # torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+    np.random.seed(seed)  # Numpy module.
+    random.seed(seed)  # Python random module.
+    torch.manual_seed(seed)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+
+    if aug == 'fft':
+        features_dim = 3
+    else:
+        features_dim = 1
+    # -------------------------------------------------------------------------
+    # Import model
+    # -------------------------------------------------------------------------
+    if 'simpletcn' in exp:
+        model = force_model(features_dim, embed_dim=16).to(device)
+        print('simpletcn')
+    elif 'mstcn' in exp:
+        from baseline.model_MSTCN import MultiStageModel
+        num_stages = 4
+        num_layers = 10
+        model = MultiStageModel(num_stages, num_layers, num_f_maps, features_dim, out_features).to(device)
+        print('mstcn')
+    elif 'ms2' in exp:
+        from baseline.model_MSTCN2 import MS_TCN2
+        num_layers_PG = 11
+        num_layers_R = 10
+        num_R = 3
+        model = MS_TCN2(num_layers_PG, num_layers_R, num_R, num_f_maps, features_dim, out_features).to(device)
+        print('ms2')
+    elif 'asformer' in exp:
+        from baseline.model_ASFormer import MyTransformer
+        num_layers = 10
+        channel_mask_rate = 0.3
+        model = MyTransformer(3, num_layers, 2, 2, num_f_maps, features_dim, out_features, channel_mask_rate).to(device)
+        print('asformer')
+    elif 'gru' in exp:
+        from baseline.LSTM_GRU_CLDNN import MultiLayerGRU
+        model = MultiLayerGRU(features_dim, 64, 4, out_features).to(device)
+        print('gru')
+    elif 'lstm' in exp:
+        from baseline.LSTM_GRU_CLDNN import MultiLayerLSTM
+        model = MultiLayerLSTM(features_dim, 64, 4, out_features).to(device)
+        print('lstm')
+    elif 'bidirectional' in exp:
+        from baseline.LSTM_GRU_CLDNN import BidirectionalLSTM
+        model = BidirectionalLSTM(features_dim, 64, 4, out_features).to(device)
+        print('bidirectional')
+    elif 'cldnn' in exp:
+        from baseline.LSTM_GRU_CLDNN import CLDNN
+        model = CLDNN(features_dim, 64, 4, out_features).to(device)
+        checkpoint_path = os.path.join('/media/root/HDD1/jialang/Force_data_code/models/cldnn_vloss_1e4', scheme + '_Fold' + fold + '_best.pth')
+        model.load_state_dict(torch.load(checkpoint_path))
+        print('cldnn test')
+    elif 'transformer' in exp:
+        from baseline.model_transformer import transformer
+        model = transformer(embed_dim=8, dropout=0.2)
+
+    # Metrics
+    acc_metric = Accuracy(task='binary').cuda()
+    f1_score_metric = F1Score(task='binary').cuda()
+    precision_metric = Precision(task='binary').cuda()
+    recall_metric = Recall(task='binary').cuda()
+
+    sig_m = nn.Sigmoid()
+    
+    # -------------------------------------------------------------------------
+    
+    def iter_dataloader(data_loader, model, training, exp, aug):
+        labels_all = torch.empty((0)).to(device)
+        output_all = torch.empty((0)).to(device)
+
+        for iter, (inputs, labels) in enumerate(data_loader):
+            
+            # Move to device
+            inputs, labels = inputs.to(device, dtype=torch.float32), labels.to(device, dtype=torch.float32)
+            
+            # Forward pass
+            if 'mstcn' in exp or 'asformer' in exp:
+                logits = model.forward(inputs, torch.ones(inputs.size(), device=device))
+            elif 'ms2' in exp:
+                logits = model.forward(inputs)
+            else:
+                logits = model.forward(inputs)
+                logits = (logits >= 0.0).int()
+            if 'ms2' in exp or 'mstcn' in exp or 'asformer' in exp:
+                logits = (sig_m(logits[-1])>=0.5).int()
+            
+            # Used for metrics
+            labels_all = torch.cat((labels_all, labels), 0)
+            output_all = torch.cat((output_all, logits), 0)
+            
+        # Metrics
+        acc = acc_metric(output_all,labels_all)
+        f1 = f1_score_metric(output_all,labels_all)
+        prec = precision_metric(output_all,labels_all)
+        rec = recall_metric(output_all,labels_all)
+        metrics = [acc,f1,prec,rec]
+        conf_matrix = confusion_matrix(labels_all.cpu().numpy(), output_all.cpu().numpy())
+
+        plt.imshow(conf_matrix, cmap=plt.cm.Blues, interpolation='nearest')
+        thresh = conf_matrix.max() / 2.
+        for i, j in itertools.product(range(conf_matrix.shape[0]), range(conf_matrix.shape[1])):
+            plt.text(j, i, f'{conf_matrix[i, j]}', horizontalalignment='center',
+                    color='white' if conf_matrix[i, j] > thresh else 'black')
+        plt.colorbar()
+        plt.tight_layout()
+        plt.yticks(range(2), ['Novice','Expert'])
+        plt.xticks(range(2), ['Novice','Expert'],rotation=45)
+        plt.xlabel("Predicted Results")
+        plt.ylabel("Ground Truth")
+        plt.show()
+        plt.savefig(os.path.join(os.getcwd(),'models',exp, 'cm_' + scheme+'_Fold'+fold), bbox_inches='tight')
+        plt.close()
+
+        return metrics
+    
+    # -------------------------------------------------------------------------
+    def testing(model, val_loader):
+
+        model.eval()
+
+        with torch.no_grad():
+
+            metrics_val = iter_dataloader(val_loader, model, training=False, exp=exp, aug=aug)
+
+        return metrics_val
+
+
+    print('\n>>> Testing\n')
+
+
+    metrics_val = testing(model, val_loader)
+
+    return metrics_val
